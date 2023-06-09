@@ -1,29 +1,19 @@
 package com.dg.simplerestapi;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import java.time.LocalTime;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SimpleRestApiApplicationTests {
-    /*
-    -Test Greeting Builder Method
-    -Test Status codes
-    -What exceptions could occur?
-     */
-
-
 
     @LocalServerPort
     int port;
@@ -35,7 +25,27 @@ class SimpleRestApiApplicationTests {
         webClient = WebClient.create(baseUrl);
     }
 
+    @Test
+    @DirtiesContext
+    @DisplayName("check the greeting id increments correctly by one each time a new request is made")
+    public void checkGreetingIdIncrementsByOneForEachRequestMade() {
+        AtomicLong counter = new AtomicLong(1);
+
+        for(int i = 0; i < 10; i++) {
+            Greeting response = webClient.get().uri("/greeting")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(Greeting.class)
+                    .block();
+
+            long currentCounter = counter.getAndIncrement();
+            Assertions.assertNotNull(response);
+            Assertions.assertEquals(currentCounter, response.id());
+        }
+    }
+
     @ParameterizedTest
+    @DirtiesContext
     @DisplayName("check Greeting builder build Greeting method returns a good morning greeting when local time is between 00:00 and 11:59 inclusive")
     @MethodSource("getLocalTimesMorning")
     public void checkGreetingBuilderMorningWithoutRequestParams(LocalTime localTime) {
@@ -51,10 +61,8 @@ class SimpleRestApiApplicationTests {
         );
     }
 
-    //@Test
-
-
     @ParameterizedTest
+    @DirtiesContext
     @DisplayName("check Greeting builder build Greeting method returns a good afternoon greeting when local time is between 12:00 and 17:59 inclusive")
     @MethodSource("getLocalTimesAfternoon")
     public void checkGreetingBuilderAfternoonWithoutRequestParams(LocalTime localTime) {
@@ -71,6 +79,7 @@ class SimpleRestApiApplicationTests {
     }
 
     @ParameterizedTest
+    @DirtiesContext
     @DisplayName("check Greeting builder build Greeting method returns a good evening greeting when local time is between 18:00 and 20:59 inclusive")
     @MethodSource("getLocalTimesEvening")
     public void checkGreetingBuilderEveningWithoutRequestParams(LocalTime localTime) {
@@ -87,6 +96,7 @@ class SimpleRestApiApplicationTests {
     }
 
     @ParameterizedTest
+    @DirtiesContext
     @DisplayName("check Greeting builder build Greeting method returns a good night greeting when local time is between 21:00 and 23:59 inclusive")
     @MethodSource("getLocalTimesNight")
     public void checkGreetingBuilderNightWithoutRequestParams(LocalTime localTime) {
@@ -103,6 +113,7 @@ class SimpleRestApiApplicationTests {
     }
 
     @Test
+    @DirtiesContext
     @DisplayName("When no name is placed as a request param JSON object returns Hello World! within response body")
     public void checkDefaultMessage() {
 
@@ -119,6 +130,7 @@ class SimpleRestApiApplicationTests {
     }
 
     @Test
+    @DirtiesContext
     @DisplayName("When a single name request param is given correct response is generated ")
     public void checkSingleRequestParam() {
 
@@ -135,6 +147,7 @@ class SimpleRestApiApplicationTests {
     }
 
     @Test
+    @DirtiesContext
     @DisplayName("When two name request parameters are given correct response is generated ")
     public void checkTwoRequestParameters() {
 
@@ -151,7 +164,8 @@ class SimpleRestApiApplicationTests {
     }
 
     @Test
-    @DisplayName("When a three name request paramaters are given correct response is generated ")
+    @DirtiesContext
+    @DisplayName("When a three name request parameters are given correct response is generated ")
     public void checkThreeRequestParameters() {
 
         String greeting = GreetingBuilder.buildGreeting(new String[]{"Bob", "Ellie", "Leo"}, LocalTime.now());
@@ -167,7 +181,8 @@ class SimpleRestApiApplicationTests {
     }
 
     @Test
-    @DisplayName("When ten name request paramaters are given correct response is generated ")
+    @DirtiesContext
+    @DisplayName("When ten name request parameters are given correct response is generated ")
     public void checkTenRequestParameters() {
 
         String greeting = GreetingBuilder.buildGreeting(new String[]{"Bob", "Ellie", "Leo", "Sam", "John", "Sarah", "Charlie", "Grant", "Fin", "Liz"}, LocalTime.now());
@@ -181,5 +196,4 @@ class SimpleRestApiApplicationTests {
         Assertions.assertNotNull(response);
         Assertions.assertEquals(greeting, response.content());
     }
-
 }

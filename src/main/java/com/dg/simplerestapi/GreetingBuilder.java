@@ -8,7 +8,6 @@ public class GreetingBuilder {
     public static String buildGreeting(String[] names, LocalTime time) {
 
         int numNames = names.length;
-        //LocalTime time = LocalTime.now();
         String greeting;
 
         if(time.isBefore(LocalTime.NOON)){
