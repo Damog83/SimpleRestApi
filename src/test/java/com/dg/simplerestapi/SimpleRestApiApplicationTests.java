@@ -1,13 +1,20 @@
 package com.dg.simplerestapi;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
 import java.time.LocalTime;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -119,14 +126,20 @@ class SimpleRestApiApplicationTests {
 
         String greeting = GreetingBuilder.buildGreeting(new String[]{"World"}, LocalTime.now());
 
-       Greeting response = webClient.get().uri("/greeting")
+        Mono<Greeting> greetingMono = webClient.get().uri("/greeting")
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(Greeting.class)
-                .block();
+                .exchangeToMono(response -> {
+                        int statusCode = response.statusCode().value();
+                        Assertions.assertEquals(HttpStatus.OK, response.statusCode(), "Unexpected status code: " + statusCode);
+                        return response.bodyToMono(Greeting.class);
+                });
 
-        Assertions.assertNotNull(response);
-        Assertions.assertEquals(greeting, response.content());
+        StepVerifier.create(greetingMono)
+                .assertNext(responseBody -> {
+                    Assertions.assertNotNull(responseBody);
+                    Assertions.assertEquals(greeting, responseBody.content());
+                })
+                .verifyComplete();
     }
 
     @Test
@@ -136,14 +149,19 @@ class SimpleRestApiApplicationTests {
 
         String greeting = GreetingBuilder.buildGreeting(new String[]{"Bob"}, LocalTime.now());
 
-        Greeting response = webClient.get().uri("/greeting?name=Bob")
+        Mono<Greeting> greetingMono = webClient.get().uri("/greeting?name=Bob")
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(Greeting.class)
-                .block();
+                .exchangeToMono(response -> {
+                    int statusCode = response.statusCode().value();
+                    Assertions.assertEquals(HttpStatus.OK, response.statusCode(), "Unexpected status code: " + statusCode);
+                    return response.bodyToMono(Greeting.class);
+                });
 
-        Assertions.assertNotNull(response);
-        Assertions.assertEquals(greeting, response.content());
+        StepVerifier.create(greetingMono).assertNext(
+                responseBody -> {
+            Assertions.assertNotNull(greetingMono);
+            Assertions.assertEquals(greeting, responseBody.content());
+        }).verifyComplete();
     }
 
     @Test
@@ -153,14 +171,19 @@ class SimpleRestApiApplicationTests {
 
         String greeting = GreetingBuilder.buildGreeting(new String[]{"Bob", "Ellie"}, LocalTime.now());
 
-        Greeting response = webClient.get().uri("/greeting?name=Bob&name=Ellie")
+        Mono<Greeting> greetingResponse = webClient.get().uri("/greeting?name=Bob&name=Ellie")
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(Greeting.class)
-                .block();
+                .exchangeToMono( response -> {
+                    int statusCode = response.statusCode().value();
+                    Assertions.assertEquals(HttpStatus.OK, response.statusCode(), "Unexpected status code: " + statusCode);
+                    return response.bodyToMono(Greeting.class);
+                });
 
-        Assertions.assertNotNull(response);
-        Assertions.assertEquals(greeting, response.content());
+        StepVerifier.create(greetingResponse)
+                        .assertNext(response -> {
+                            Assertions.assertNotNull(response);
+                            Assertions.assertEquals(greeting,response.content());
+                        }).verifyComplete();
     }
 
     @Test
@@ -170,14 +193,19 @@ class SimpleRestApiApplicationTests {
 
         String greeting = GreetingBuilder.buildGreeting(new String[]{"Bob", "Ellie", "Leo"}, LocalTime.now());
 
-        Greeting response = webClient.get().uri("/greeting?name=Bob&name=Ellie&name=Leo")
+        Mono<Greeting> greetingResponse = webClient.get().uri("/greeting?name=Bob&name=Ellie&name=Leo")
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(Greeting.class)
-                .block();
+                .exchangeToMono(response -> {
+                    int statusCode = response.statusCode().value();
+                    Assertions.assertEquals(HttpStatus.OK, response.statusCode(), "Unexpected status code: " + statusCode);
+                    return response.bodyToMono(Greeting.class);
+                });
 
-        Assertions.assertNotNull(response);
-        Assertions.assertEquals(greeting, response.content());
+        StepVerifier.create(greetingResponse)
+                        .assertNext(response -> {
+                            Assertions.assertNotNull(response);
+                            Assertions.assertEquals(greeting, response.content());
+                        }).verifyComplete();
     }
 
     @Test
@@ -187,13 +215,18 @@ class SimpleRestApiApplicationTests {
 
         String greeting = GreetingBuilder.buildGreeting(new String[]{"Bob", "Ellie", "Leo", "Sam", "John", "Sarah", "Charlie", "Grant", "Fin", "Liz"}, LocalTime.now());
 
-        Greeting response = webClient.get().uri("/greeting?name=Bob&name=Ellie&name=Leo&name=Sam&name=John&name=Sarah&name=Charlie&name=Grant&name=Fin&name=Liz")
+        Mono<Greeting> greetingRresponse = webClient.get().uri("/greeting?name=Bob&name=Ellie&name=Leo&name=Sam&name=John&name=Sarah&name=Charlie&name=Grant&name=Fin&name=Liz")
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(Greeting.class)
-                .block();
+                .exchangeToMono(response -> {
+                    int statusCode = response.statusCode().value();
+                    Assertions.assertEquals(HttpStatus.OK, response.statusCode(), "Unexpected status code: " + statusCode);
+                    return response.bodyToMono(Greeting.class);
+                });
 
-        Assertions.assertNotNull(response);
-        Assertions.assertEquals(greeting, response.content());
+                StepVerifier.create(greetingRresponse)
+                                .assertNext(response -> {
+                                    Assertions.assertNotNull(response);
+                                    Assertions.assertEquals(greeting, response.content());
+                                }).verifyComplete();
     }
 }
