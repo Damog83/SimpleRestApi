@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 *.log
+src/main/java/com/dg/simplerestapi/FileHandlerConfig.java
 
 ### STS ###
 .apt_generated
