@@ -215,7 +215,7 @@ class SimpleRestApiApplicationTests {
 
         String greeting = GreetingBuilder.buildGreeting(new String[]{"Bob", "Ellie", "Leo", "Sam", "John", "Sarah", "Charlie", "Grant", "Fin", "Liz"}, LocalTime.now());
 
-        Mono<Greeting> greetingRresponse = webClient.get().uri("/greeting?name=Bob&name=Ellie&name=Leo&name=Sam&name=John&name=Sarah&name=Charlie&name=Grant&name=Fin&name=Liz")
+        Mono<Greeting> greetingResponse = webClient.get().uri("/greeting?name=Bob&name=Ellie&name=Leo&name=Sam&name=John&name=Sarah&name=Charlie&name=Grant&name=Fin&name=Liz")
                 .accept(MediaType.APPLICATION_JSON)
                 .exchangeToMono(response -> {
                     int statusCode = response.statusCode().value();
@@ -223,7 +223,7 @@ class SimpleRestApiApplicationTests {
                     return response.bodyToMono(Greeting.class);
                 });
 
-                StepVerifier.create(greetingRresponse)
+                StepVerifier.create(greetingResponse)
                                 .assertNext(response -> {
                                     Assertions.assertNotNull(response);
                                     Assertions.assertEquals(greeting, response.content());
